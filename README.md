@@ -28,3 +28,4 @@ end
 }
 ```
 
+The client pid needs to be able to `handle_info` messages of the form `{:msg, payload, redelivered, tag}`

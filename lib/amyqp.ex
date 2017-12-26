@@ -57,47 +57,23 @@ defmodule AmyQP do
   end
 
   # Confirmation sent by the broker after registering this process as a consumer
-  def handle_info({:basic_consume_ok, %{consumer_tag: consumer_tag}}, state) do
+  def handle_info({:basic_consume_ok, %{consumer_tag: _consumer_tag}}, state) do
     {:noreply, state}
   end
 
   # Sent by the broker when the consumer is unexpectedly cancelled (such as after a queue deletion)
-  def handle_info({:basic_cancel, %{consumer_tag: consumer_tag}}, state) do
+  def handle_info({:basic_cancel, %{consumer_tag: _consumer_tag}}, state) do
     {:stop, :normal, state}
   end
 
   # Confirmation sent by the broker to the consumer process after a Basic.cancel
-  def handle_info({:basic_cancel_ok, %{consumer_tag: consumer_tag}}, state) do
+  def handle_info({:basic_cancel_ok, %{consumer_tag: _consumer_tag}}, state) do
     {:noreply, state}
   end
 
   def handle_info({:basic_deliver, payload, %{delivery_tag: tag, redelivered: redelivered}}, state) do
-    spawn fn -> consume(state, tag, redelivered, payload) end
+    #spawn fn -> consume(state, tag, redelivered, payload) end
+    send state[:opts][:client_pid], {:msg, payload, redelivered, tag}
     {:noreply, state}
-  end
-
-  defp consume(channel, tag, redelivered, payload) do
-    try do
-      number = String.to_integer payload
-      if number <= 10 do
-        Basic.ack channel, tag
-        IO.puts "Consumed a #{number}."
-      else
-        Basic.reject channel, tag, requeue: false
-        IO.puts "#{number} is too big and was rejected."
-      end
-
-    rescue
-      # Requeue unless it's a redelivered message.
-      # This means we will retry consuming a message once in case of exception
-      # before we give up and have it moved to the error queue
-      #
-      # You might also want to catch :exit signal in production code.
-      # Make sure you call ack, nack or reject otherwise comsumer will stop
-      # receiving messages.
-      exception ->
-        Basic.reject channel, tag, requeue: not redelivered
-        IO.puts "Error converting #{payload} to integer"
-    end
   end
 end
