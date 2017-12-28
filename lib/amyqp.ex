@@ -28,8 +28,10 @@ defmodule AmyQP do
   end
 
   defp rabbitmq_connect(opts) do
+    Logger.info "Connecting to RMQ..."
     case Connection.open("amqp://#{opts[:username]}:#{opts[:password]}@#{opts[:host]}") do
       {:ok, conn} ->
+        Logger.info "OK!"
         # Get notifications when the connection goes down
         Process.monitor conn.pid
 
@@ -46,6 +48,7 @@ defmodule AmyQP do
         {:ok, chan}
       {:error, _} ->
         # Reconnection loop
+        Logger.info "Can't connect, retrying..."
         :timer.sleep 1000
         rabbitmq_connect opts
     end
