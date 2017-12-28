@@ -21,7 +21,8 @@ defmodule Amyqp.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:amqp, "~> 0.3.1"}
+      {:amqp, "~> 0.3.1"},
+      {:poison, "~> 3.1"},
     ]
   end
 end

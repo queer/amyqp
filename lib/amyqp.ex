@@ -3,7 +3,7 @@ defmodule AmyQP do
   use AMQP
 
   def start_link(opts) do
-    GenServer.start_link __MODULE__, opts, __MODULE__
+    GenServer.start_link __MODULE__, opts, name: __MODULE__
   end
 
   # Config
@@ -51,6 +51,17 @@ defmodule AmyQP do
     end
   end
 
+  # Handle sending messages to the queue
+  def handle_info({:dispatch, message}, state) do
+    output_msg = unless is_binary message do
+      message |> Poison.encode!
+    else
+      message
+    end
+    Basic.publish state[:chan], state[:opts][:exchange], state[:opts][:queue], output_msg
+    {:noreply, state}
+  end
+
   def handle_info({:DOWN, _, :process, _pid, _reason}, state) do
     {:ok, chan} = rabbitmq_connect state[:opts]
     {:noreply, %{state | chan: chan}}
@@ -71,7 +82,7 @@ defmodule AmyQP do
     {:noreply, state}
   end
 
-  def handle_info({:basic_deliver, payload, %{delivery_tag: tag, redelivered: redelivered}}, state) do
+  def handle_info({:basic_deliver, payload, %{delivery_tag: tag, redelivered: redelivered}} = _meta, state) do
     #spawn fn -> consume(state, tag, redelivered, payload) end
     send state[:opts][:client_pid], {:msg, payload, redelivered, tag}
     {:noreply, state}
