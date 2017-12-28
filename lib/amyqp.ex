@@ -49,7 +49,7 @@ defmodule AmyQP do
         {:ok, chan}
       {:error, _} ->
         # Reconnection loop
-        Logger.info "Can't connect, retrying..."
+        Logger.debug "Can't connect, retrying..."
         :timer.sleep 1000
         rabbitmq_connect opts
     end
