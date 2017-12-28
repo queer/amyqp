@@ -1,9 +1,10 @@
 defmodule AmyQP do
   use GenServer
   use AMQP
+  require Logger
 
   def start_link(opts) do
-    GenServer.start_link __MODULE__, opts, name: __MODULE__
+    GenServer.start_link __MODULE__, opts
   end
 
   # Config
