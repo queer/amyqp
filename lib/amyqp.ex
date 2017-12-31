@@ -7,7 +7,7 @@ defmodule AmyQP do
     Logger.debug "Module: #{inspect __MODULE__}"
     Logger.debug "  opts: #{inspect opts}"
     Logger.debug "  name: #{inspect __MODULE__}"
-    GenServer.start_link __MODULE__, opts, name: __MODULE__
+    GenServer.start_link __MODULE__, opts
   end
 
   # Config
