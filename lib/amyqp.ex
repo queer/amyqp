@@ -4,6 +4,9 @@ defmodule AmyQP do
   require Logger
 
   def start_link(opts) do
+    Logger.debug "Module: #{inspect __MODULE__}"
+    Logger.debug "  opts: #{inspect opts}"
+    Logger.debug "  name: #{inspect __MODULE__}"
     GenServer.start_link __MODULE__, opts, name: __MODULE__
   end
 
@@ -19,12 +22,13 @@ defmodule AmyQP do
   # }
 
   def init(opts) do
+    Logger.debug "Got init/1 call, connecting!"
     {:ok, chan} = rabbitmq_connect opts
     state = %{
       opts: opts,
       chan: chan,
     }
-
+    Logger.debug "All done!"
     {:ok, state}
   end
 
